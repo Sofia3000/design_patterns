@@ -64,7 +64,6 @@ def main():
     """
     Demonstrates usage of ConsolePrinter and FilePrinter.
     """
-    # Test Printers
     console_printer = ConsolePrinter()
     file_printer = FilePrinter()
 
