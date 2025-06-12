@@ -90,7 +90,10 @@ def render_ui(factory: ThemeFactory) -> None:
     Applies text and background color using ANSI escape codes.
     
     :param factory: The theme factory to use for creating UI components.
+    :raises TypeError: If factory is not an instance of ThemeFactory
     """
+    if not isinstance(factory, ThemeFactory):
+        raise TypeError('Factory must be an instance of ThemeFactory')
     window = factory.create_window()
     text = factory.create_text()
     # Display window title and text with proper styling
