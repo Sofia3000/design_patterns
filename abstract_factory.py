@@ -70,18 +70,18 @@ class ThemeFactory(ABC):
 
 class LightTheme(ThemeFactory):
     """Factory for creating light-themed UI components."""
-    def create_window(self) -> Window:
+    def create_window(self) -> LightWindow:
         return LightWindow()
 
-    def create_text(self) -> Text:
+    def create_text(self) -> LightText:
         return LightText()
     
 class DarkTheme(ThemeFactory):
     """Factory for creating dark-themed UI components."""
-    def create_window(self) -> Window:
+    def create_window(self) -> DarkWindow:
         return DarkWindow()
 
-    def create_text(self) -> Text:
+    def create_text(self) -> DarkText:
         return DarkText()
 
 def render_ui(factory: ThemeFactory) -> None:

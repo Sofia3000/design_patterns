@@ -5,8 +5,8 @@ class DmsCoordinate:
     """
     Represents a geographical coordinate in Degrees, Minutes, Seconds (DMS) format.
     """
-    def __init__(self, lat_degrees: int, lat_minutes: int, lat_seconds: float,
-                 lon_degrees: int, lon_minutes: int, lon_seconds: float):
+    def __init__(self, lat_degrees: int, lat_minutes: int, lat_seconds: int,
+                 lon_degrees: int, lon_minutes: int, lon_seconds: int):
         
         self.lat_degrees = lat_degrees
         self.lat_minutes = lat_minutes
@@ -64,7 +64,7 @@ class DmsCoordinate:
         self.__lat_minutes = value
 
     @property
-    def lat_seconds(self) -> float:
+    def lat_seconds(self) -> int:
         """Returns the seconds component of latitude."""
         return self.__lat_seconds
     
@@ -97,7 +97,7 @@ class DmsCoordinate:
         self.__lon_minutes = value
 
     @property
-    def lon_seconds(self) -> float:
+    def lon_seconds(self) -> int:
         """Returns the seconds component of longitude."""
         return self.__lon_seconds
     
