@@ -12,7 +12,7 @@ class MenuComponent(ABC):
     @abstractmethod
     def display(self, indent: int) -> None:
         """
-        Displays inforamtion about MenuComponent with given indentation.
+        Displays information about MenuComponent with given indentation.
         :param indent: Indentation level (number of spaces).
         """
 
@@ -23,7 +23,7 @@ class MenuComponent(ABC):
     @name.setter
     def name(self, value):
         """
-        Set and validate the name of the component.
+        Sets and validates the name of the component.
         :param value: New name as a non-empty string.
         :raises TypeError: If value is not a string.
         :raises ValueError: If value is empty.
@@ -41,7 +41,7 @@ class Dish(MenuComponent):
     """
     def __init__(self, name: str, price: int):
         """
-        Initialize a dish with a name and a positive integer price.
+        Initializes a dish with a name and a positive integer price.
         :param name: Name of the dish.
         :param price: Price of the dish.
         :raises TypeError: If price is not an integer.
@@ -55,11 +55,12 @@ class Dish(MenuComponent):
         self.__price = price
 
     def calculate_price(self) -> int:
+        """Calculates and returns the price of the Dish """
         return self.__price
     
     def display(self, indent: int = 0) -> None:
         """
-        Display name and price of the dish with indentation.
+        Displays name and price of the dish with indentation.
         :param indent: Number of spaces before the text.
         :raises TypeError: If indent is not an integer.
         :raises ValueError: If indent is negative.
@@ -77,7 +78,7 @@ class Order(MenuComponent):
     """
     def __init__(self, name: str):
         """
-        Initialize an order with a name and empty component list.
+        Initializes an order with a name and empty component list.
         :param name: Name of the order.
         """
         self.name = name
@@ -85,7 +86,7 @@ class Order(MenuComponent):
 
     def add(self, item: MenuComponent):
         """
-        Add a dish or sub-order to this order.
+        Adds a dish or sub-order to this order.
         :param item: MenuComponent.
         :raises TypeError: If item is not a MenuComponent.
         """
@@ -95,7 +96,7 @@ class Order(MenuComponent):
     
     def remove(self, item: MenuComponent):
         """
-        Remove a dish or sub-order from this order.
+        Removes a dish or sub-order from this order.
         :param item: MenuComponent to remove.
         :raises TypeError: If item is not a MenuComponent.
         """
@@ -106,14 +107,14 @@ class Order(MenuComponent):
 
     def calculate_price(self) -> int:
         """
-        Calculate the total price of all components in this order.
+        Calculates the total price of all components in this order.
         :return: Total price.
         """
         return sum(component.calculate_price() for component in self.__components)
 
     def display(self, indent: int = 0) -> None:
         """
-        Display the order and all its components with indentation.
+        Displays the order and all its components with indentation.
         :param indent: Number of spaces before the text.
         :raises TypeError: If indent is not an integer.
         :raises ValueError: If indent is negative.
