@@ -49,7 +49,7 @@ class User:
         if not isinstance(value, str):
             raise TypeError("Parameter 'name' must be a string")
         if not value.strip():
-            raise ValueError("Parameter 'name' could be empty")
+            raise ValueError("Parameter 'name' could not be empty")
         self.__name = value
 
     @property
