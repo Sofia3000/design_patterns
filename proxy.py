@@ -127,7 +127,9 @@ class DocumentProxy(AbstractDocument):
         :raises TypeError: if document or role are of wrong types
         """
         if not isinstance(document, AbstractDocument):
-            raise TypeError("Parameter 'document' must be AbstractDocument")
+            raise TypeError(
+                "Parameter 'document' must be an instance of AbstractDocument"
+            )
         if not isinstance(role, str):
             raise TypeError("Parameter 'role' must be a string")
         if role not in ACCESS_LEVELS:
