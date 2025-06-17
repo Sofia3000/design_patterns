@@ -12,14 +12,13 @@ class Handler(ABC):
     """
 
     @abstractmethod
-    def handle(self, request) -> Optional[str]:
+    def handle(self, file_path: str) -> Optional[str]:
         """
         Handle the given request or pass it to the next handler.
 
         :param request: The request to handle.
         :return: Optional response string.
         """
-        pass
 
 
 class FileHandler(Handler):
