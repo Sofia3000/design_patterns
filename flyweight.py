@@ -104,7 +104,7 @@ class FigureFactory:
         return cls._figures[(shape, color)]
 
     @classmethod
-    def figure_count(cls) -> int:
+    def get_figure_count(cls) -> int:
         """
         Returns the number of unique Figure instances created.
 
@@ -139,7 +139,7 @@ def main():
         )
 
     print(f"{count} random figures were painted.")
-    print(f"{FigureFactory.figure_count()} unique Figure instance(s) were used.")
+    print(f"{FigureFactory.get_figure_count()} unique Figure instance(s) were used.")
 
     screen.mainloop()
 
