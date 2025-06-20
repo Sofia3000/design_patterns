@@ -4,13 +4,13 @@ from typing import Optional, Any
 
 class Report:
     """
-    Represents a structured report consisting of a title, content, and footer.
+    Represents a structured report consisting of a name, content, and footer.
     Stores parts of a report identified by keys and allows combining them
     into a complete textual representation. Only predefined part names
-    ('title', 'content', 'footer') are allowed.
+    ('name', 'content', 'footer') are allowed.
     """
     # Allowed part names
-    _part_names = ('title', 'content', 'footer')
+    _part_names = ('name', 'content', 'footer')
     
     def __init__(self) -> None:
         self._parts = {}
@@ -19,7 +19,7 @@ class Report:
         """
         Adds a report part with the specified key and content.
 
-        :param key: The name of the part (must be 'title', 'content', or 'footer').
+        :param key: The name of the part (must be 'name', 'content', or 'footer').
         :param value: The textual content for the specified part.
         :raises TypeError: If key or value is not a string.
         :raises ValueError: If key is not one of the allowed part names.
@@ -62,9 +62,9 @@ class ReportBuilder(ABC):
     @abstractmethod
     def add_title(self, text: str) -> None:
         """
-        Adds a title to the report.
+        Adds a name to the report.
 
-        :param text: The title text.
+        :param text: The name text.
         """
     
     @abstractmethod
@@ -99,7 +99,7 @@ class PlainTextReportBuilder(ReportBuilder):
 
     @validate_text
     def add_title(self, text: str) -> None:
-        self._report.add('title', text)
+        self._report.add('name', text)
     
     @validate_text
     def add_content(self, text: str) -> None:
@@ -128,7 +128,7 @@ class MarkdownReportBuilder(ReportBuilder):
 
     @validate_text
     def add_title(self, text: str) -> None:
-        self._report.add('title', '# '+text)
+        self._report.add('name', '# '+text)
 
     @validate_text
     def add_content(self, text: str) -> None:

@@ -72,7 +72,7 @@ def main():
     user_doc1 = template.clone()
     user_doc1.author = "Alice"
 
-    # Create copy with new title and content
+    # Create copy with new name and content
     user_doc2 = template.clone()
     user_doc2.title = "Final Report"
     user_doc2.content = "New content"

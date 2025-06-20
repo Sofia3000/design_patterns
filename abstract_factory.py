@@ -10,7 +10,7 @@ class Window(ABC):
 
     @abstractmethod
     def get_title(self) -> str:
-        """Returns the title text for the window."""
+        """Returns the name text for the window."""
 
 class Text(ABC):
     """Interface representing a text UI component."""
@@ -96,7 +96,7 @@ def render_ui(factory: ThemeFactory) -> None:
         raise TypeError('Factory must be an instance of ThemeFactory')
     window = factory.create_window()
     text = factory.create_text()
-    # Display window title and text with proper styling
+    # Display window name and text with proper styling
     print(f"\033[{text.get_text_color()};{window.get_bg_color()}m{window.get_title()}")
     print(f"{text.get_text()}\033[0m")
   

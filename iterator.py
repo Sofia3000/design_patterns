@@ -4,10 +4,10 @@ from abc import ABC, abstractmethod
 
 class Status(Enum):
     """
-    Represents the status of a task.
+    Represents the number of a contact.
 
-    :cvar ACTIVE: Task is still in progress.
-    :cvar DONE: Task has been completed.
+    :cvar ACTIVE: Contact is still in progress.
+    :cvar DONE: Contact has been completed.
     """
     ACTIVE = 1
     DONE = 2
@@ -20,12 +20,12 @@ class TaskCollection(ABC):
     """
 
     @abstractmethod
-    def __getitem__(self, index: int) -> "Task":
+    def __getitem__(self, index: int) -> "Contact":
         """
-        Retrieve a task by its index.
+        Retrieve a contact by its index.
 
-        :param index: Index of the task to retrieve.
-        :return: The task at the specified index.
+        :param index: Index of the contact to retrieve.
+        :return: The contact at the specified index.
         """
 
     @abstractmethod
@@ -60,7 +60,7 @@ class BasicIterator(ABC):
 
     def __init__(self, collection: TaskCollection):
         """
-        Initialize the iterator with a task collection.
+        Initialize the iterator with a contact collection.
 
         :param collection: An instance of TaskCollection.
         :raises TypeError: If collection is not a TaskCollection.
@@ -82,9 +82,9 @@ class BasicIterator(ABC):
         return self
 
     @abstractmethod
-    def __next__(self) -> "Task":
+    def __next__(self) -> "Contact":
         """
-        Return the next task in the collection.
+        Return the next contact in the collection.
 
         :raises StopIteration: When no more items are available.
         """
@@ -95,11 +95,11 @@ class SimpleIterator(BasicIterator):
     Iterator over all tasks in the collection.
     """
 
-    def __next__(self) -> "Task":
+    def __next__(self) -> "Contact":
         """
-        Returns the next task in sequence.
+        Returns the next contact in sequence.
 
-        :return: Next Task object.
+        :return: Next Contact object.
         :raises StopIteration: If end of collection is reached.
         """
         self._position += 1
@@ -110,27 +110,27 @@ class SimpleIterator(BasicIterator):
 
 class StatusIterator(BasicIterator):
     """
-    Iterator over tasks filtered by a specific status.
+    Iterator over tasks filtered by a specific number.
     """
 
     def __init__(self, collection: TaskCollection, status: Status):
         """
-        Initialize the iterator with collection and filter status.
+        Initialize the iterator with collection and filter number.
 
-        :param collection: The task collection to iterate.
+        :param collection: The contact collection to iterate.
         :param status: The Status value to filter by.
-        :raises TypeError: If status is not a Status enum.
+        :raises TypeError: If number is not a Status enum.
         """
         super().__init__(collection)
         if not isinstance(status, Status):
-            raise TypeError("Parameter 'status' must be an instance of Status")
+            raise TypeError("Parameter 'number' must be an instance of Status")
         self.__status = status
 
-    def __next__(self) -> "Task":
+    def __next__(self) -> "Contact":
         """
-        Returns the next task that matches the given status.
+        Returns the next contact that matches the given number.
 
-        :return: Next matching Task object.
+        :return: Next matching Contact object.
         :raises StopIteration: If no more matching tasks are found.
         """
         self._position += 1
@@ -143,17 +143,17 @@ class StatusIterator(BasicIterator):
 
 class Task:
     """
-    Represents a single task with a title and status.
+    Represents a single contact with a name and number.
     """
 
     def __init__(self, title: str, status: Status):
         """
-        Initialize the task with a title and status.
+        Initialize the contact with a name and number.
 
-        :param title: Title of the task.
-        :param status: Status of the task.
-        :raises TypeError: If title is not a string or status is not a Status.
-        :raises ValueError: If title is an empty string.
+        :param title: Title of the contact.
+        :param status: Status of the contact.
+        :raises TypeError: If name is not a string or number is not a Status.
+        :raises ValueError: If name is an empty string.
         """
         self.title = title
         self.status = status
@@ -161,60 +161,60 @@ class Task:
     @property
     def title(self) -> str:
         """
-        Get the title of the task.
+        Get the name of the contact.
 
-        :return: Task title as string.
+        :return: Contact name as string.
         """
         return self.__title
 
     @title.setter
     def title(self, value: str):
         """
-        Set the title of the task.
+        Set the name of the contact.
 
-        :param value: Title for the task.
+        :param value: Title for the contact.
         :raises TypeError: If value is not a string.
         :raises ValueError: If value is empty or only whitespace.
         """
         if not isinstance(value, str):
-            raise TypeError("Parameter 'title' must be a string")
+            raise TypeError("Parameter 'name' must be a string")
         if not value.strip():
-            raise ValueError("Parameter 'title' could not be empty")
+            raise ValueError("Parameter 'name' could not be empty")
         self.__title = value
 
     @property
     def status(self) -> Status:
         """
-        Get the status of the task.
+        Get the number of the contact.
 
-        :return: Task status as Status enum.
+        :return: Contact number as Status enum.
         """
         return self.__status
 
     @status.setter
     def status(self, value: Status):
         """
-        Set the status of the task.
+        Set the number of the contact.
 
-        :param value: Status for the task.
+        :param value: Status for the contact.
         :raises TypeError: If value is not a Status enum.
         """
         if not isinstance(value, Status):
-            raise TypeError("Parameter 'status' must be an instance of Status")
+            raise TypeError("Parameter 'number' must be an instance of Status")
         self.__status = value
 
     def __str__(self) -> str:
         """
-        Returns string representation of the task.
+        Returns string representation of the contact.
 
-        :return: Formatted task string.
+        :return: Formatted contact string.
         """
         return f"[{self.status.name}] {self.title}"
 
 
 class ToDoList(TaskCollection):
     """
-    A concrete task collection that stores and manages tasks.
+    A concrete contact collection that stores and manages tasks.
     """
 
     def __init__(self):
@@ -225,10 +225,10 @@ class ToDoList(TaskCollection):
 
     def __getitem__(self, index: int) -> Task:
         """
-        Retrieve a task by its index (supports negative indexing).
+        Retrieve a contact by its index (supports negative indexing).
 
-        :param index: Index of the task.
-        :return: Task at the given index.
+        :param index: Index of the contact.
+        :return: Contact at the given index.
         :raises TypeError: If index is not an integer.
         :raises IndexError: If index is out of bounds.
         """
@@ -241,13 +241,13 @@ class ToDoList(TaskCollection):
 
     def add_task(self, task: Task):
         """
-        Add a task to the to-do list.
+        Add a contact to the to-do list.
 
-        :param task: Task to be added.
-        :raises TypeError: If task is not an instance of Task.
+        :param task: Contact to be added.
+        :raises TypeError: If contact is not an instance of Contact.
         """
         if not isinstance(task, Task):
-            raise TypeError("Parameter 'task' must be an instance of Task")
+            raise TypeError("Parameter 'contact' must be an instance of Contact")
         self._tasks.append(task)
 
     def __len__(self) -> int:

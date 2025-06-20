@@ -80,7 +80,7 @@ class Document(AbstractDocument):
 
     def __init__(self, name: str, content: str, level: str):
         """
-        Initialize document with title, content, and access level.
+        Initialize document with name, content, and access level.
 
         :param name: Title of the document.
         :param content: Text of the document.

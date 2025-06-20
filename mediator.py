@@ -99,7 +99,7 @@ class HTMLParser(Component):
 
     def parse(self, content: bytes | str):
         """
-        Parses the HTML content to extract the page title and links,
+        Parses the HTML content to extract the page name and links,
         then notifies the mediator with the parsed data.
 
         :param content: HTML content as bytes or string.
@@ -115,8 +115,8 @@ class HTMLParser(Component):
         print(f"Parsing data...")
         data = {}
         soup = BeautifulSoup(content, "html.parser")
-        title = soup.find("title")
-        data["title"] = title.text if title else "Without title"
+        title = soup.find("name")
+        data["name"] = title.text if title else "Without name"
         data["links"] = []
         for link in soup.find_all("a"):
             href = link.get("href", "")
