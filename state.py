@@ -1,217 +1,269 @@
+from enum import Enum
 from abc import ABC, abstractmethod
-from typing import List, Optional
-import os
-import pprint
 
 
-class SearchState(ABC):
+class Status(Enum):
     """
-    Abstract base class for search strategies used by FileSearcher.
-    Defines the interface and helper method
-    for accessing directory content.
+    Represents the result of a code entry attempt.
+    """
+    CORRECTCODE = 1
+    SUPERCODE = 2
+    WRONGCODE = 3
+
+
+class LockState(ABC):
+    """
+    Abstract base class for representing the state of a Lock.
+
+    Each subclass should define behavior for how the lock responds
+    when a code is entered in a given state.
     """
 
-    def _get_folder_content(self, folder: str) -> Optional[List[str]]:
+    def __init__(self):
         """
-        Safely retrieve the content of a given folder.
+        Initializes the LockState with no associated Lock context.
+        """
+        self.__lock = None
 
-        :param folder: Absolute or relative path to the directory.
-        :return: List of item names in the folder, or None if an error occurred.
+    @property
+    def lock(self):
         """
-        try:
-            return os.listdir(folder)
-        except PermissionError:
-            print(f"Error: Permission denied to access '{folder}'.")
-            return
-        except Exception as e:
-            print(f"An error occurred: {e}")
-            return
+        Returns the lock context associated with this state.
+
+        :return: The Lock object using this state.
+        """
+        return self.__lock
+
+    @lock.setter
+    def lock(self, lock: "Lock"):
+        """
+        Sets the context lock that owns this state.
+
+        :param lock: A Lock object.
+        :raises TypeError: If the object is not an instance of Lock.
+        """
+        if not isinstance(lock, Lock):
+            raise TypeError("Parameter 'lock' must be an instance of Lock")
+        self.__lock = lock
 
     @abstractmethod
-    def search(self, folder: str, query: str) -> List[str]:
+    def on_code_entered(self, status: Status) -> None:
         """
-        Perform a search in the specified folder based on a query.
+        Handle behavior when a code is entered in this state.
 
-        :param folder: Path to the folder to search in.
-        :param query: Search term.
-        :return: List of matching file names.
+        :param status: Status indicating result of code comparison.
         """
 
 
-class FileSearcher:
+    def _check_context(self):
+        """
+        Validates that the lock context has been set for this state.
+
+        :raises RuntimeError: If the lock is not set.
+        """
+        if not self.lock:
+            raise RuntimeError("State isn't associated with any Lock context")
+
+
+class Lock:
     """
-    Context class for managing file search operations using different strategies.
+    Context class representing a digital lock that can transition between different states.
 
-    Uses the State pattern to delegate the actual search logic.
+    Uses the State pattern to delegate state-specific behavior.
     """
 
-    def __init__(self, state: SearchState):
-        """
-        Initialize the FileSearcher with a specific search strategy.
+    _max_failed_attempts = 3
 
-        :param state: Initial search strategy (state).
+    def __init__(self, code: str, supercode: str, state: LockState):
         """
+        Initializes the lock with a user code, a supercode, and an initial state.
+
+        :param code: The regular code to unlock the lock.
+        :param supercode: The emergency code to reset from error state.
+        :param state: The initial state of the lock.
+        :raises TypeError, ValueError: On invalid arguments.
+        """
+        if not isinstance(code, str):
+            raise TypeError("Parameter 'code' must be a string")
+        if not isinstance(supercode, str):
+            raise TypeError("Parameter 'supercode' must be a string")
+        if not self._validate_code(code):
+            raise ValueError(f"Invalid code: {code}")
+        if not self._validate_code(supercode):
+            raise ValueError(f"Invalid supercode: {supercode}")
+        if code == supercode:
+            raise ValueError(
+                "Parameters 'code' and 'supercode' must be differrent"
+            )
+        self.__code = code
+        self.__supercode = supercode
         self.set_state(state)
+        self.__failed_attempts = 0
 
-    def set_state(self, state: SearchState):
+    def set_state(self, state: LockState) -> None:
         """
-        Change the current search strategy.
+        Sets a new state for the lock.
 
-        :param state: New SearchState to use.
-        :raises TypeError: If the state is not a SearchState instance.
+        :param state: A new LockState instance.
+        :raises TypeError: If the argument is not a LockState.
         """
-        if not isinstance(state, SearchState):
+        if not isinstance(state, LockState):
             raise TypeError(
-                "Parameter 'state' must be an instance of SearchState"
+                "Parameter 'state' must be an instance of LockState"
             )
         self.__state = state
+        self.__state.lock = self
 
-    def search(self, folder: str, query: str) -> List[str]:
+    def enter_code(self, code: str) -> None:
         """
-        Perform a search using the current strategy.
+        Accepts a code input and processes it using the current state.
 
-        :param folder: Path to the folder to search in.
-        :param query: Search term.
-        :return: List of matching file names.
-        :raises TypeError, ValueError: For invalid input.
+        :param code: The code entered by the user.
+        :raises TypeError, ValueError: On invalid input.
         """
-        if not isinstance(folder, str):
-            raise TypeError("Parameter 'folder' must be a string")
-        if not folder.strip():
-            raise ValueError("Parameter 'folder' must not be empty")
-        if not os.path.isdir(folder):
-            raise ValueError(f"Wrong directory: {folder}")
-        if not isinstance(query, str):
-            raise TypeError("Parameter 'query' must be a string")
-        if not query.strip():
-            raise ValueError("Parameter 'query' must not be empty")
-        return self.__state.search(folder, query)
+        if not isinstance(code, str):
+            raise TypeError("Parameter 'code' must be a string")
+        if not code.strip():
+            raise ValueError("Parameter 'code' must not be empty")
+        status = self._check_status(code)
+        self.__state.on_code_entered(status)
+
+    def _validate_code(self, code: str) -> bool:
+        """
+        Validates if the given code is a numeric string of appropriate length.
+
+        :param code: Code to validate.
+        :return: True if valid, False otherwise.
+        """
+        return code.isdigit() and 8 <= len(code) < 13
+
+    def _check_status(self, code: str) -> Status:
+        """
+        Determines the status of the entered code.
+
+        :param code: The input code.
+        :return: Corresponding Status enum value.
+        """
+        if self.__code == code:
+            return Status.CORRECTCODE
+        if self.__supercode == code:
+            return Status.SUPERCODE
+        return Status.WRONGCODE
+
+    def increase_failed_attempts(self):
+        """
+        Increments the number of failed attempts by one.
+        """
+        self.__failed_attempts += 1
+
+    def reset_failed_attempts(self):
+        """
+        Resets the failed attempts counter to zero.
+        """
+        self.__failed_attempts = 0
+
+    def is_limit_exceeded(self) -> bool:
+        """
+        Checks if the number of failed attempts
+        has exceeded the allowed limit.
+
+        :return: True if limit exceeded, else False.
+        """
+        return self.__failed_attempts >= self._max_failed_attempts
 
 
-class NameSearchState(SearchState):
+class LockedState(LockState):
     """
-    Concrete search strategy for finding files
-    that contain a query in their name.
-    """
+    Concrete state where the lock is locked.
 
-    def search(self, folder: str, query: str) -> List[str]:
-        """
-        Search for files with names that contain the query substring.
-
-        :param folder: Directory to search in.
-        :param query: Substring to search for in filenames.
-        :return: List of matching filenames.
-        """
-        query = query.lower()
-        content = self._get_folder_content(folder)
-        result = []
-        if content:
-            for item in content:
-                name = item
-                full_path = os.path.join(folder, item)
-                if os.path.isfile(full_path):
-                    name = os.path.splitext(item)[0].lower()
-                if query in name:
-                    result.append(item)
-
-        return result
-
-
-class ExtensionSearchState(SearchState):
-    """
-    Concrete search strategy for finding files
-    by their extension.
-    """
-
-    def search(self, folder: str, query: str) -> List[str]:
-        """
-        Search for files with a specific extension.
-
-        :param folder: Directory to search in.
-        :param query: File extension to search for (without dot).
-        :return: List of matching filenames.
-        """
-        query = query.lower()
-        content = self._get_folder_content(folder)
-        result = []
-        if content:
-            for item in content:
-                full_path = os.path.join(folder, item)
-                if not os.path.isfile(full_path):
-                    continue
-                ext = os.path.splitext(item)[1][1:].lower()
-                if query == ext:
-                    result.append(item)
-
-        return result
-
-
-class ContentSearchState(SearchState):
-    """
-    Concrete search strategy for finding files
-    that contain a query in their content.
+    Accepts the correct code to unlock,
+    or transitions to ErrorState on too many failures.
     """
 
-    def search(self, folder: str, query: str) -> List[str]:
+    def on_code_entered(self, status: Status) -> None:
         """
-        Search for files containing the query string in their content.
+        Processes the entered code while in the locked state.
 
-        :param folder: Directory to search in.
-        :param query: Substring to search for inside files.
-        :return: List of matching filenames.
+        :param status: Status of the entered code.
         """
-        query = query.lower()
-        content = self._get_folder_content(folder)
-        result = []
-        if content:
-            for item in content:
-                full_path = os.path.join(folder, item)
-                if not os.path.isfile(full_path):
-                    continue
-                try:
-                    with open(full_path, 'r') as fhand:
-                        for line in fhand:
-                            if query in line.lower():
-                                result.append(item)
-                                break
-                except:
-                    continue
+        self._check_context()
+        if status == Status.CORRECTCODE:
+            print("Lock is unlocked")
+            self.lock.reset_failed_attempts()
+            self.lock.set_state(UnlockedState())
+        else:
+            print("Incorrect code. Lock remains closed.")
+            self.lock.increase_failed_attempts()
+            if self.lock.is_limit_exceeded():
+                print("Lock is in error state. Supercode required to reset.")
+                self.lock.set_state(ErrorState())
 
-        return result
+
+class UnlockedState(LockState):
+    """
+    Concrete state where the lock is unlocked.
+
+    Accepts the correct code again to lock the lock.
+    """
+
+    def on_code_entered(self, status: Status) -> None:
+        """
+        Processes the entered code while in the unlocked state.
+
+        :param status: Status of the entered code.
+        """
+        self._check_context()
+        if status == Status.CORRECTCODE:
+            print("Lock is locked")
+            self.lock.set_state(LockedState())
+        else:
+            print("Incorrect code. Lock remains unlocked.")
+
+
+class ErrorState(LockState):
+    """
+    Concrete state for error handling.
+
+    Only accepts the supercode to return to locked state.
+    """
+
+    def on_code_entered(self, status: Status) -> None:
+        """
+        Processes the entered code while in the error state.
+
+        :param status: Status of the entered code.
+        """
+        self._check_context()
+        if status == Status.SUPERCODE:
+            print("Lock is locked. Use code to unlock.")
+            self.lock.reset_failed_attempts()
+            self.lock.set_state(LockedState())
+        else:
+            print("Incorrect supercode. Lock remains in error state.")
 
 
 def main():
     """
-    Demonstrate usage of FileSearcher with different search strategies.
+    Entry point for demonstrating the lock behavior.
+
+    Initializes the lock and prompts user for code input in a loop.
     """
-    directory = os.getcwd()
-    name = "factory"
-    extension = "py"
-    text = "import os"
-
-    searcher = FileSearcher(NameSearchState())
-    results = searcher.search(directory, name)
-    if results:
-        print(f"All items with '{name}' in name:")
-        pprint.pp(results)
-    else:
-        print(f"There are no items with '{name}' in name")
-
-    searcher.set_state(ExtensionSearchState())
-    results = searcher.search(directory, extension)
-    if results:
-        print(f"\nAll files with extension '.{extension}':")
-        pprint.pp(results)
-    else:
-        print(f"\nThere are no files with extension '.{extension}'")
-
-    searcher.set_state(ContentSearchState())
-    results = searcher.search(directory, text)
-    if results:
-        print(f"\nAll files that contains '{text}':")
-        pprint.pp(results)
-    else:
-        print(f"\nNo files contain '{text}'")
+    lock = Lock('12345678', "55555555", LockedState())
+    print("Lock was locked")
+    while True:
+        action = input("Do you want to enter code (input 'y' if yes): ")
+        if action.lower() == "y":
+            code = input("Enter code: ")
+            if not code.strip():
+                print("Code must not be empty")
+                continue
+            if not code.isdigit():
+                print("Code must contain only digits")
+                continue
+            lock.enter_code(code)
+        else:
+            print("Exiting")
+            break
 
 
 # Run main() only when script is executed directly
