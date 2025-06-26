@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<table>
+<row>
+<Name>Alice</Name>
+<Age>30</Age>
+<City>London</City>
+</row>
+<row>
+<Name>Bob</Name>
+<Age>25</Age>
+<City>Berlin</City>
+</row>
+<row>
+<Name>Charlie</Name>
+<Age>35</Age>
+<City>Paris</City>
+</row>
+</table>

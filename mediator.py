@@ -115,7 +115,7 @@ class HTMLParser(Component):
         print(f"Parsing data...")
         data = {}
         soup = BeautifulSoup(content, "html.parser")
-        title = soup.find("name")
+        title = soup.find("title")
         data["name"] = title.text if title else "Without name"
         data["links"] = []
         for link in soup.find_all("a"):
